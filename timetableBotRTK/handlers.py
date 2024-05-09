@@ -1,15 +1,23 @@
+import sys
 import asyncio
 import json
 import datetime
 from aiogram import Router, F
 from aiogram.types import message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.filters import CommandStart, Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 
 
 ro = Router(name=__name__)
 
-choose_group = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='выбрать группу', callback_data='choose_group')]])
+class addadmin_state(StatesGroup):
+    username = State()
 
+class rmadmin_state(StatesGroup):
+    username = State()
+
+choose_group = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='выбрать группу', callback_data='choose_group')]])
 groups = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='С1-23', callback_data='С1-23'),InlineKeyboardButton(text='С1-22', callback_data='С1-22'), InlineKeyboardButton(text='ИВ1_22_1', callback_data='ИВ1_22_1')],
                                                [InlineKeyboardButton(text='ИВ1_22_2', callback_data='ИВ1_22_2'),InlineKeyboardButton(text='ИВ1_23_1', callback_data='ИВ1_23_1'), InlineKeyboardButton(text='ИВ1_23_2', callback_data='ИВ1_23_2')],
                                                [InlineKeyboardButton(text='ИВ1К_22', callback_data='ИВ1К_22'),InlineKeyboardButton(text='ИВ2_22', callback_data='ИВ2_22'), InlineKeyboardButton(text='ИП1_22', callback_data='ИП1_22')],
@@ -22,14 +30,24 @@ groups = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='С1-2
 
 
 #func____________________________________________________________________________
+def is_admin(id):
+    with open('users.json', 'r') as f:
+        data = json.load(f)
+    return data[str(id)]['admin']
+
+
+def get_data_of_user(chat_id):
+    with open('users.json', 'r') as f:
+        data = json.load(f)
+    return data[str(chat_id)] 
+
+
 def create_settings_keyboard(chat_id):
     try:
-        with open('users.json', 'r') as f:
-                data = json.load(f)
-                data = data[f'{chat_id}']
+        user = get_data_of_user(chat_id)
         return InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(data['everylesson'])}', callback_data='everylesson')],
-                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(data['changes'])}', callback_data='changes')]
+                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user['everylesson'])}', callback_data='everylesson')],
+                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user['changes'])}', callback_data='changes')]
                 ])
     except KeyError:
         return False
@@ -71,28 +89,45 @@ def convert_bool(bool):
         return 'Выкл.'
 
 
-
-#async func___________________________________________________________________
-def adduser(chat_id: int, group: str):
+def adduser(chat_id: int, group: str, username:str):
     with open('users.json', 'r') as f:
         data = json.load(f)
+    try:
+        if is_admin(chat_id):
+            admin = True
+    except:
+        admin = False
     data.update({f'{chat_id}': {
         'everyday': False,
         'everylesson': False,
         'changes': False,
         'group': group,
-        'admin': False
+        'admin': admin,
+        'username': username
     }})
     with open('users.json', 'w') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-async def change_settings(chat_id:int, sitting:str):
+def change_settings(chat_id:int, sitting:str):
     with open('users.json', 'r') as f:
         data = json.load(f)
     data[f'{chat_id}'][sitting] = not data[f'{chat_id}'][sitting]
     with open('users.json', 'w') as f:
         json.dump(data, f)
+
+
+def change_admin(username:str, is_admin:bool):
+    with open('users.json', 'r') as f:
+        data = json.load(f)
+    for id in data.keys():
+        if data[str(id)]['username'] == username:
+            data[str(id)]['admin'] = is_admin
+            with open('users.json', 'w') as f:
+                json.dump(data, f)
+            return True
+    return False
+
 
 
 
@@ -283,175 +318,175 @@ async def choose_g(callback_query: CallbackQuery):
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *С1-23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'С1_23')
+    adduser(callback_query.message.chat.id, 'С1_23', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'С1-22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *С1-22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'С1_22')
+    adduser(callback_query.message.chat.id, 'С1_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ1_22_1')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ1_22_1*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ1_22_1')
+    adduser(callback_query.message.chat.id, 'ИВ1_22_1', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ1_22_2')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ1_22_2*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ1_22_2')
+    adduser(callback_query.message.chat.id, 'ИВ1_22_2', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ1_23_1')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ1_23_1*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ1_23_1')
+    adduser(callback_query.message.chat.id, 'ИВ1_23_1', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ1_23_2')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ1_23_2*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ1_23_2')
+    adduser(callback_query.message.chat.id, 'ИВ1_23_2', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ1К_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ1К_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ1К_22')
+    adduser(callback_query.message.chat.id, 'ИВ1К_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИВ2_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИВ2_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИВ2_22')
+    adduser(callback_query.message.chat.id, 'ИВ2_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИП1_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИП1_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИП1_22')
+    adduser(callback_query.message.chat.id, 'ИП1_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИП1_23')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИП1_23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИП1_23')
+    adduser(callback_query.message.chat.id, 'ИП1_23', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИП2_23')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИП2_23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИП2_23')
+    adduser(callback_query.message.chat.id, 'ИП2_23', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'ИП2К_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *ИП2К_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'ИП2К_22')
+    adduser(callback_query.message.chat.id, 'ИП2К_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М1_22_1')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М1_22_1*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М1_22_1')
+    adduser(callback_query.message.chat.id, 'М1_22_1', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М1_22_2')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М1_22_2*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М1_22_2')
+    adduser(callback_query.message.chat.id, 'М1_22_2', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М1_23_1')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М1_23_1*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М1_23_1')
+    adduser(callback_query.message.chat.id, 'М1_23_1', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М1_23_2')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М1_23_2*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М1_23_2')
+    adduser(callback_query.message.chat.id, 'М1_23_2', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М1_23_3')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М1_23_3*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М1_23_3')
+    adduser(callback_query.message.chat.id, 'М1_23_3', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'М2_23')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *М2_23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'М2_23')
+    adduser(callback_query.message.chat.id, 'М2_23', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'МТ1_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *МТ1_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'МТ1_22')
+    adduser(callback_query.message.chat.id, 'МТ1_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'МТ1_23')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *МТ1_23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'МТ1_23')
+    adduser(callback_query.message.chat.id, 'МТ1_23', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'Н1_22')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *Н1_22*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'Н1_22')
+    adduser(callback_query.message.chat.id, 'Н1_22', callback_query.from_user.username)
 
 
 @ro.callback_query(lambda c: c.data == 'Р2_23')
 async def С1_23(callback_query: CallbackQuery):
     await callback_query.answer('Успешно!')
     await callback_query.message.edit_text('вы закреплены за группой *Р2_23*. По умолчанию все уведомления выключены. Если вы хотите настроить уведомления используйте комманду   /settings\n🟡 - замена', parse_mode="Markdown")
-    adduser(callback_query.message.chat.id, 'Р2_23')
+    adduser(callback_query.message.chat.id, 'Р2_23', callback_query.from_user.username)
 
 
 
 
 @ro.callback_query(lambda c: c.data == 'everyday')
 async def choose_everyday(callback_query: CallbackQuery):
-    await change_settings(callback_query.message.chat.id, 'everyday')
+    change_settings(callback_query.message.chat.id, 'everyday')
     keyboard = create_settings_keyboard(callback_query.message.chat.id)
     await callback_query.message.edit_text('ваши настройки уведомлений:', reply_markup=keyboard, parse_mode="Markdown")
 
 
 @ro.callback_query(lambda c: c.data == 'everylesson')
 async def choose_everyday(callback_query: CallbackQuery):
-    await change_settings(callback_query.message.chat.id, 'everylesson')
+    change_settings(callback_query.message.chat.id, 'everylesson')
     keyboard = create_settings_keyboard(callback_query.message.chat.id)
     await callback_query.message.edit_text('ваши настройки уведомлений:', reply_markup=keyboard, parse_mode="Markdown")
 
 
 @ro.callback_query(lambda c: c.data == 'changes')
 async def choose_everyday(callback_query: CallbackQuery):
-    await change_settings(callback_query.message.chat.id, 'changes')
+    change_settings(callback_query.message.chat.id, 'changes')
     keyboard = create_settings_keyboard(callback_query.message.chat.id)
     await callback_query.message.edit_text('ваши настройки уведомлений:', reply_markup=keyboard, parse_mode="Markdown")
 
@@ -525,3 +560,53 @@ async def next_week(message:message):
     [InlineKeyboardButton(text='пятница', callback_data='next_friday'), InlineKeyboardButton(text='суббота', callback_data='next_saturday')]
     ])
     await message.answer(f'расписание какого дня следующей недели вам нужно?', reply_markup=next_week_kb)
+
+
+@ro.message(Command('crash'))
+async def crash(message:message):
+    if is_admin(message.chat.id):
+        print((1000 - 7) / 0)
+    else:
+        await message.answer('вы не админ')
+
+
+@ro.message(Command('addadmin'))
+async def addadmin(message:message, state:FSMContext):
+    if is_admin(message.chat.id):
+        await state.set_state(addadmin_state.username)
+        await message.answer('отправте username (без @)')
+    else:
+        await message.answer('вы не админ')
+
+
+@ro.message(addadmin_state.username)
+async def addadmin_username(message:message, state:FSMContext):
+    await state.update_data(username=message.text)
+    data = await state.get_data()
+    is_correct = change_admin(data['username'], True)
+    if is_correct:
+        await message.answer(f'пользователь {data['username']} назначен админом')
+    else:
+        await message.answer('пользователь не найден')
+    await state.clear()
+
+
+@ro.message(Command('rmadmin'))
+async def rmadmin(message:message, state:FSMContext):
+    if is_admin(message.chat.id):
+        await state.set_state(rmadmin_state.username)
+        await message.answer('отправте username (без @)')
+    else:
+        await message.answer('вы не админ')
+
+
+@ro.message(rmadmin_state.username)
+async def rmadmin_username(message:message, state:FSMContext):
+    await state.update_data(username=message.text)
+    data = await state.get_data()
+    is_correct = change_admin(data['username'], False)
+    if is_correct:
+        await message.answer(f'пользователь {data['username']} теперь не админ')
+    else:
+        await message.answer('пользователь не найден')
+    await state.clear()

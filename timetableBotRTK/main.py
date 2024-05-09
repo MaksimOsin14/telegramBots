@@ -39,6 +39,60 @@ groups = [С1_23, ИВ1_22_1, ИВ1_22_2, ИВ1_23_1, ИВ1_23_2, ИВ1К_22, И
 
 
 
+#def_____________________________________________________
+def get_group(chat_id:int):
+    with open('users.json', 'r') as f:
+        data = json.load(f)
+    return data[str(chat_id)]['group']
+
+
+def get_date_next_week():
+    now = datetime.datetime.now()
+    now = now.replace(day=30)
+    day = now.day + 7 - now.weekday()
+    try:
+        answer = now.replace(day=day)
+    except ValueError:
+        day -= int(now.max.day)
+        answer = now.replace(day=day)
+    return answer.date()
+
+
+def create_user_js():
+    try:
+         open('users.json', 'r')
+    except:
+        with open('users.json', 'w') as f:
+            admins = {'5111168208': {
+    'everyday': False,
+    'everylesson': False,
+    'changes': False,
+    'group': 'С1_23',
+    'admin': True,
+    'username': 'MAKS1M_BG'
+    }}
+            json.dump(admins, f)
+
+
+def get_day_by_int(n_day:int):
+    match n_day:
+        case 0:
+            return 'понедельник'
+        case 1:
+            return 'вторник'
+        case 2:
+            return 'среда'
+        case 3:
+            return 'четверг'
+        case 4:
+            return 'пятница'
+        case 5:
+            return 'суббота'
+        case 6:
+            return 'воскресенье'
+        
+
+
 #async def_____________________________________________________________________________________
 async def send_notice_changes(old:list, new:list, group:str, weekday:int):
         text = ''
@@ -73,8 +127,8 @@ async def send_everylesson(day, lesson):
         users = json.load(f)
     for id in users.keys():
         if users[f'{id}']['everylesson']:
-            group = users[f'{id}']['group']
-            with open(f'{group}.json', 'r') as f:
+            group = get_group(id)
+            with open(f'groups/{group}.json', 'r') as f:
                 week = json.load(f)
             if len(week[day][lesson][1]) > 1:
                 await bot.send_message(id, f'*следующий урок для группы {group}:* \n{week[day][lesson][0]}. {week[day][lesson][1]} {week[day][lesson][2]} {week[day][lesson][4]}', parse_mode='Markdown')
@@ -125,52 +179,6 @@ async def next_week_parse():
             url = group.url.replace('index?', f'index?date={date}')
             myparser.next_week_parse(url, group.name)
         await asyncio.sleep(7200)
-
-
-#def_____________________________________________________
-def get_date_next_week():
-    now = datetime.datetime.now()
-    now = now.replace(day=30)
-    day = now.day + 7 - now.weekday()
-    try:
-        answer = now.replace(day=day)
-    except ValueError:
-        day -= int(now.max.day)
-        answer = now.replace(day=day)
-    return answer.date()
-
-
-def create_user_js():
-    try:
-         open('users.json', 'r')
-    except:
-        with open('users.json', 'w') as f:
-            admins = {'111111111': {
-    'everyday': False,
-    'everylesson': False,
-    'changes': False,
-    'group': 'С1_23',
-    'admin': True
-    }}
-            json.dump(admins, f)
-
-
-def get_day_by_int(n_day:int):
-    match n_day:
-        case 0:
-            return 'понедельник'
-        case 1:
-            return 'вторник'
-        case 2:
-            return 'среда'
-        case 3:
-            return 'четверг'
-        case 4:
-            return 'пятница'
-        case 5:
-            return 'суббота'
-        case 6:
-            return 'воскресенье'
 
 
 
