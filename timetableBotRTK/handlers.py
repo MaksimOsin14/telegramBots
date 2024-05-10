@@ -585,7 +585,7 @@ async def addadmin_username(message:message, state:FSMContext):
     data = await state.get_data()
     is_correct = change_admin(data['username'], True)
     if is_correct:
-        await message.answer(f'пользователь {data['username']} назначен админом')
+        await message.answer(f'пользователь {data["username"]} назначен админом')
     else:
         await message.answer('пользователь не найден')
     await state.clear()
@@ -606,7 +606,7 @@ async def rmadmin_username(message:message, state:FSMContext):
     data = await state.get_data()
     is_correct = change_admin(data['username'], False)
     if is_correct:
-        await message.answer(f'пользователь {data['username']} теперь не админ')
+        await message.answer(f'пользователь {data["username"]} теперь не админ')
     else:
         await message.answer('пользователь не найден')
     await state.clear()
