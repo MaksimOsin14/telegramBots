@@ -46,8 +46,8 @@ def create_settings_keyboard(chat_id):
     try:
         user = get_data_of_user(chat_id)
         return InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user['everylesson'])}', callback_data='everylesson')],
-                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user['changes'])}', callback_data='changes')]
+                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user["everylesson"])}', callback_data='everylesson')],
+                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user["changes"])}', callback_data='changes')]
                 ])
     except KeyError:
         return False
