@@ -519,7 +519,7 @@ async def lessons_now(message: message):
         if len(day) > 1:
             await message.answer(f'*актуальное расписание для группы {group} на сегодня:*\n{day}', parse_mode='Markdown')
         else:
-            await message.answer(f'уроков для группы {group} на завтра нет!')
+            await message.answer(f'уроков для группы {group} на сегодня нет!')
     else:
         await message.answer(f'вы ещё не зарегестрированы! Чтобы зарегистрироваться используйте комманду /start')
 
