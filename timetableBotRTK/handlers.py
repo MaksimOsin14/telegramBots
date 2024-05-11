@@ -46,8 +46,8 @@ def create_settings_keyboard(chat_id):
     try:
         user = get_data_of_user(chat_id)
         return InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user["everylesson"])}', callback_data='everylesson')],
-                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user["changes"])}', callback_data='changes')]
+                [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user['everylesson'])}', callback_data='everylesson')],
+                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user['changes'])}', callback_data='changes')]
                 ])
     except KeyError:
         return False
@@ -537,7 +537,7 @@ async def lessons_tomorrow(message: message):
         if len(day) > 1:
             await message.answer(f'*актуальное расписание для группы {group} на завтра:*\n{day}', parse_mode='Markdown')
         else:
-            await message.answer(f'уроков для группы {group} на завтра нет!')
+            await message.answer(f'уроков для группы {groups} на завтра нет!')
     else:
         await message.answer(f'вы ещё не зарегестрированы! Чтобы зарегистрироваться используйте комманду /start', parse_mode='Markdown')
 
@@ -585,7 +585,7 @@ async def addadmin_username(message:message, state:FSMContext):
     data = await state.get_data()
     is_correct = change_admin(data['username'], True)
     if is_correct:
-        await message.answer(f'пользователь {data["username"]} назначен админом')
+        await message.answer(f'пользователь {data['username']} назначен админом')
     else:
         await message.answer('пользователь не найден')
     await state.clear()
@@ -606,7 +606,7 @@ async def rmadmin_username(message:message, state:FSMContext):
     data = await state.get_data()
     is_correct = change_admin(data['username'], False)
     if is_correct:
-        await message.answer(f'пользователь {data["username"]} теперь не админ')
+        await message.answer(f'пользователь {data['username']} теперь не админ')
     else:
         await message.answer('пользователь не найден')
     await state.clear()
