@@ -8,12 +8,10 @@ from aiogram import F, Bot, Dispatcher
 from aiogram.types import message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.filters import Command
 
-#paste your bot token here_______________________
-bot_token = ''
-#________________________________________________
+
 
 #consts__________________________________________________________________________
-bot = Bot(token=bot_token)
+bot = Bot(token='6428725995:AAHMsoetO7lasmVWLt-bm0Bmrh-ZHe4RCvM')
 dp = Dispatcher()
 С1_23 = myparser.current_parser('С1_23', 'http://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=61&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
 ИВ1_22_1 = myparser.current_parser('ИВ1_22_1', 'https://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=32&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
@@ -50,7 +48,6 @@ def get_group(chat_id:int):
 
 def get_date_next_week():
     now = datetime.datetime.now()
-    now = now.replace(day=30)
     day = now.day + 7 - now.weekday()
     try:
         answer = now.replace(day=day)
@@ -92,7 +89,14 @@ def get_day_by_int(n_day:int):
             return 'суббота'
         case 6:
             return 'воскресенье'
-        
+
+
+def beautiful_day(day:list):
+    text = ''
+    for lesson in day:
+        if len(lesson[1]) > 1:
+            text += f'{lesson[0]}.   {lesson[1]}   {lesson[2]}   {lesson[4]}\n'
+    return text
 
 
 #async def_____________________________________________________________________________________
@@ -173,18 +177,36 @@ async def everylesson():
         await asyncio.sleep(60)
 
 
+
+
+
+#main____________________________________________________________________
+async def everyday():
+    print('start everyday')
+    while True:
+        time = datetime.datetime.now()
+        if time.hour == 6:
+            with open('users.json', 'r') as f:
+                users = json.load(f)
+            for id in users.keys():
+                if users[f'{id}']['everyday']:
+                    with open(f'groups/{users[str(id)]['group']}.json', 'r') as f:
+                        data = json.load(f)
+                    day = beautiful_day(data[time.weekday()])
+                    await bot.send_message(id, f'*расписание на сегодня:*\n{day}', parse_mode='Markdown')
+        await asyncio.sleep(3600)
+
+
 async def next_week_parse():
     print('start next week pars')
     while True:
         date = get_date_next_week()
         for group in groups:
-            url = group.url.replace('index?', f'index?date={date}')
+            url = group.url.replace('index?', f'index?date={date}&')
             myparser.next_week_parse(url, group.name)
         await asyncio.sleep(7200)
 
 
-
-#main____________________________________________________________________
 async def bot_pool():
     print('starting bot!')
     create_user_js()
@@ -199,7 +221,6 @@ async def loop():
         i.lessons_write()
 
     while True:
-        time = datetime.datetime.now()
         await check_changes()                 
 
         for i in groups:
@@ -209,7 +230,7 @@ async def loop():
 
 
 async def main():
-    await asyncio.gather(bot_pool(), loop(), everylesson(), next_week_parse())
+    await asyncio.gather(bot_pool(), loop(), everylesson(), next_week_parse(), everyday())
 
 
 

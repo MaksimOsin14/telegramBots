@@ -89,3 +89,6 @@ try:
     os.makedirs('next_week_groups')
 except FileExistsError:
     pass
+
+if __name__=='__main__':
+    next_week_parse('http://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=61&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=', 'test')

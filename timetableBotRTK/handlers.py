@@ -47,7 +47,8 @@ def create_settings_keyboard(chat_id):
         user = get_data_of_user(chat_id)
         return InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text=f'уведомление каждый урок: {convert_bool(user["everylesson"])}', callback_data='everylesson')],
-                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user["changes"])}', callback_data='changes')]
+                [InlineKeyboardButton(text=f'уведомление об изменениях: {convert_bool(user["changes"])}', callback_data='changes')],
+                [InlineKeyboardButton(text=f'уведомление каждый день: {convert_bool(user["everyday"])}', callback_data='everyday')]
                 ])
     except KeyError:
         return False
@@ -127,7 +128,6 @@ def change_admin(username:str, is_admin:bool):
                 json.dump(data, f)
             return True
     return False
-
 
 
 
@@ -226,7 +226,7 @@ async def next_monday(callback_query: CallbackQuery):
     back_next_week = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='⬅️назад', callback_data='back_next_week')]])
     group = get_group(callback_query.message.chat.id)
     if group:
-        day = get_day(0, group)
+        day = get_next_week_day(0, group)
         text = beautiful_day(day)
         await callback_query.answer('понедельник')
         await callback_query.message.edit_text(f'расписание на *понедельник* следующей недели для группы *{group}*:\n\n{text}', parse_mode='Markdown', reply_markup=back_next_week)
@@ -478,17 +478,18 @@ async def choose_everyday(callback_query: CallbackQuery):
 
 
 @ro.callback_query(lambda c: c.data == 'everylesson')
-async def choose_everyday(callback_query: CallbackQuery):
+async def choose_everylesson(callback_query: CallbackQuery):
     change_settings(callback_query.message.chat.id, 'everylesson')
     keyboard = create_settings_keyboard(callback_query.message.chat.id)
     await callback_query.message.edit_text('ваши настройки уведомлений:', reply_markup=keyboard, parse_mode="Markdown")
 
 
 @ro.callback_query(lambda c: c.data == 'changes')
-async def choose_everyday(callback_query: CallbackQuery):
+async def choose_changes(callback_query: CallbackQuery):
     change_settings(callback_query.message.chat.id, 'changes')
     keyboard = create_settings_keyboard(callback_query.message.chat.id)
     await callback_query.message.edit_text('ваши настройки уведомлений:', reply_markup=keyboard, parse_mode="Markdown")
+
 
 
 
