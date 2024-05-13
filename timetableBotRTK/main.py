@@ -191,7 +191,7 @@ async def everyday():
                 users = json.load(f)
             for id in users.keys():
                 if users[f'{id}']['everyday']:
-                    with open(f'groups/{users[str(id)]['group']}.json', 'r') as f:
+                    with open(f'groups/{users[str(id)]["group"]}.json', 'r') as f:
                         data = json.load(f)
                     day = beautiful_day(data[time.weekday()])
                     await bot.send_message(id, f'*расписание на сегодня:*\n{day}', parse_mode='Markdown')
