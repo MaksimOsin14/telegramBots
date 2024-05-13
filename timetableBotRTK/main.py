@@ -8,10 +8,11 @@ from aiogram import F, Bot, Dispatcher
 from aiogram.types import message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.filters import Command
 
-
+#paste your bot token here
+bot_token = ''
 
 #consts__________________________________________________________________________
-bot = Bot(token='6428725995:AAHMsoetO7lasmVWLt-bm0Bmrh-ZHe4RCvM')
+bot = Bot(token='bot_token')
 dp = Dispatcher()
 С1_23 = myparser.current_parser('С1_23', 'http://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=61&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
 ИВ1_22_1 = myparser.current_parser('ИВ1_22_1', 'https://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=32&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
