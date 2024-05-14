@@ -8,11 +8,10 @@ from aiogram import F, Bot, Dispatcher
 from aiogram.types import message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.filters import Command
 
-#paste your bot token here
-bot_token = ''
+
 
 #consts__________________________________________________________________________
-bot = Bot(token='bot_token')
+bot = Bot(token='6428725995:AAHMsoetO7lasmVWLt-bm0Bmrh-ZHe4RCvM')
 dp = Dispatcher()
 С1_23 = myparser.current_parser('С1_23', 'http://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=61&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
 ИВ1_22_1 = myparser.current_parser('ИВ1_22_1', 'https://e-spo.ru/org/rasp/export/site/index?pid=1&RaspBaseSearch%5Bgroup_id%5D=32&RaspBaseSearch%5Bsemestr%5D=vesna&RaspBaseSearch%5Bprepod_id%5D=')
@@ -98,6 +97,18 @@ def beautiful_day(day:list):
         if len(lesson[1]) > 1:
             text += f'{lesson[0]}.   {lesson[1]}   {lesson[2]}   {lesson[4]}\n'
     return text
+
+
+def crate_groups_jsons():
+    try:
+        open('groups/С1_23.json', 'r')
+        open('groups/ИВ1_22_1.json', 'r')
+        open('groups/М1_22_2.json', 'r')
+    except:
+        for i in groups:
+            i.parse()
+            i.lessons_write()
+
 
 
 #async def_____________________________________________________________________________________
@@ -217,9 +228,7 @@ async def bot_pool():
 
 async def loop():
     print('start loop parser')
-    for i in groups:
-        i.parse()
-        i.lessons_write()
+    crate_groups_jsons()
 
     while True:
         await check_changes()                 
